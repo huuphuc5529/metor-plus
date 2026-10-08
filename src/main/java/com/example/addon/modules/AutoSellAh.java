@@ -10,6 +10,7 @@ import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -90,16 +91,16 @@ public class AutoSellAh extends Module {
         }
 
         // =========================
-        // KIỂM TRA ITEM ĐANG CẦM
+        // KIỂM TRA MAIN HAND
         // =========================
 
         ItemStack hand = mc.player.getMainHandItem();
 
         /*
-         * Chỉ bán khi tay đang cầm ĐÚNG item đã chọn.
+         * CHỈ được bán nếu Main Hand
+         * đúng loại item đã chọn.
          */
         if (hand.getItem() == item.get()) {
-
             mc.player.connection.sendCommand(
                 "ah sell " + price.get()
             );
@@ -115,41 +116,60 @@ public class AutoSellAh extends Module {
         int slot = findItem();
 
         /*
-         * Không có item:
-         * Không tắt module.
-         * Chỉ đứng chờ.
+         * Không có item thì KHÔNG tắt module.
+         * Đứng chờ đến khi có item.
          */
         if (slot == -1) {
             return;
         }
 
         // =========================
-        // ĐƯA ITEM LÊN TAY
+        // ITEM TRONG HOTBAR
         // =========================
 
         if (slot < 9) {
-            /*
-             * Item nằm trong hotbar.
-             */
             mc.player.getInventory().setSelectedSlot(slot);
-        } else {
+
             /*
-             * Item nằm trong inventory.
-             *
-             * Đưa item vào hotbar slot 0.
+             * Chờ 1 tick rồi kiểm tra lại Main Hand.
              */
-            mc.player.getInventory().swapPaint(slot);
-            mc.player.getInventory().setSelectedSlot(0);
+            timer = 1;
+            return;
         }
 
+        // =========================
+        // ITEM TRONG INVENTORY
+        // =========================
+
         /*
-         * Chờ 1 tick để kiểm tra lại Main Hand.
+         * Đưa item từ inventory vào
+         * hotbar slot 0.
+         *
+         * SWAP + button 0
+         * = đổi với hotbar slot 0.
+         */
+        mc.gameMode.handleContainerInput(
+            mc.player.containerMenu.containerId,
+            slot,
+            0,
+            ContainerInput.SWAP,
+            mc.player
+        );
+
+        /*
+         * Chọn hotbar slot 0.
+         */
+        mc.player.getInventory().setSelectedSlot(0);
+
+        /*
+         * Chưa bán ngay.
+         * Tick sau sẽ kiểm tra Main Hand.
          */
         timer = 1;
     }
 
     // =========================
-    // TÌM ITEM TRONG INVENTORY
+    // TÌM ITEM
     // =========================
 
     private int findItem() {
@@ -162,7 +182,7 @@ public class AutoSellAh extends Module {
             }
 
             /*
-             * Chỉ đúng loại item đã chọn.
+             * Chỉ đúng loại item được chọn.
              */
             if (stack.getItem() == item.get()) {
                 return slot;
