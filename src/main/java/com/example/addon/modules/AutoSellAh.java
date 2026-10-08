@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
-public class AutoSellAH extends Module {
+public class AutoSellAh extends Module {
     private final SettingGroup sg = settings.getDefaultGroup();
 
     // =========================
