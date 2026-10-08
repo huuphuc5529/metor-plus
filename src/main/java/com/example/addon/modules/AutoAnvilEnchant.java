@@ -2,7 +2,12 @@ package com.example.addon.modules;
 
 import com.example.addon.AddonTemplate;
 import meteordevelopment.meteorclient.events.world.TickEvent;
-import meteordevelopment.meteorclient.settings.*;
+import meteordevelopment.meteorclient.settings.BoolSetting;
+import meteordevelopment.meteorclient.settings.EnchantmentListSetting;
+import meteordevelopment.meteorclient.settings.IntSetting;
+import meteordevelopment.meteorclient.settings.ItemListSetting;
+import meteordevelopment.meteorclient.settings.Setting;
+import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.core.Holder;
@@ -23,10 +28,6 @@ import java.util.Set;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
-/**
- * Auto Anvil Enchant
- * Minecraft 26.2 / Meteor 26.2
- */
 public class AutoAnvilEnchant extends Module {
     private final SettingGroup sg = settings.getDefaultGroup();
 
@@ -85,7 +86,7 @@ public class AutoAnvilEnchant extends Module {
         super(
             AddonTemplate.CATEGORY,
             "auto-anvil-enchant",
-            "Mở đe: tự đặt đồ đang cầm và sách enchant còn thiếu."
+            "Tự động sử dụng đe để ghép enchant."
         );
     }
 
@@ -115,7 +116,6 @@ public class AutoAnvilEnchant extends Module {
         ItemStack right = menu.getSlot(1).getItem();
         ItemStack output = menu.getSlot(2).getItem();
 
-        // Bước 3: lấy kết quả
         if (!output.isEmpty()) {
             if (autoTake.get() && canTake(menu)) {
                 click(menu, 2);
@@ -125,7 +125,6 @@ public class AutoAnvilEnchant extends Module {
             return;
         }
 
-        // Bước 1: đặt đồ đang cầm vào ô trái
         if (left.isEmpty()) {
             int heldSlot = 30 + mc.player.getInventory().getSelectedSlot();
             ItemStack held = menu.getSlot(heldSlot).getItem();
@@ -142,7 +141,6 @@ public class AutoAnvilEnchant extends Module {
             return;
         }
 
-        // Bước 2: đặt sách vào ô phải
         if (right.isEmpty()) {
             int book = findBook(menu, left);
 
@@ -155,11 +153,6 @@ public class AutoAnvilEnchant extends Module {
         }
     }
 
-    /**
-     * Minecraft 26.2:
-     * ClickType + handleInventoryMouseClick()
-     * đã được thay bằng ContainerInput + handleContainerInput().
-     */
     private void click(AnvilMenu menu, int slot) {
         mc.gameMode.handleContainerInput(
             menu.containerId,
@@ -199,11 +192,10 @@ public class AutoAnvilEnchant extends Module {
         ItemStack target,
         ItemStack book
     ) {
-        ItemEnchantments stored =
-            book.getOrDefault(
-                DataComponents.STORED_ENCHANTMENTS,
-                ItemEnchantments.EMPTY
-            );
+        ItemEnchantments stored = book.getOrDefault(
+            DataComponents.STORED_ENCHANTMENTS,
+            ItemEnchantments.EMPTY
+        );
 
         ItemEnchantments current =
             EnchantmentHelper.getEnchantmentsForCrafting(target);
@@ -224,7 +216,6 @@ public class AutoAnvilEnchant extends Module {
             for (Holder<Enchantment> existing : current.keySet()) {
                 if (!existing.equals(ench)
                     && !Enchantment.areCompatible(ench, existing)) {
-
                     conflict = true;
                     break;
                 }
@@ -240,9 +231,3 @@ public class AutoAnvilEnchant extends Module {
         return false;
     }
 }
-
-Lưu ý: phần này chỉ sửa lỗi "ClickType". Lỗi "HUD_GROUP" đã được sửa ở "AddonTemplate.java". Sau khi dán file trên, chạy lại:
-
-./gradlew build
-
-Nếu lại xuất hiện lỗi khác, gửi nguyên log mới cho mình; mình sẽ tiếp tục sửa theo API 26.2.
