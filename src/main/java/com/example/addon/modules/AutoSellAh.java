@@ -19,13 +19,13 @@ public class AutoSellAh extends Module {
     private final SettingGroup sg = settings.getDefaultGroup();
 
     // =========================
-    // ITEM MUỐN BÁN
+    // ITEM
     // =========================
 
     private final Setting<Item> item = sg.add(
         new ItemSetting.Builder()
             .name("item")
-            .description("Chọn đúng item muốn bán.")
+            .description("Chọn item muốn bán.")
             .defaultValue(net.minecraft.world.item.Items.DIAMOND)
             .build()
     );
@@ -37,7 +37,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> price = sg.add(
         new IntSetting.Builder()
             .name("price")
-            .description("Giá bán cho mỗi lần /ah sell.")
+            .description("Giá bán bằng lệnh /ah sell.")
             .defaultValue(200000)
             .min(1)
             .sliderMax(10000000)
@@ -60,7 +60,7 @@ public class AutoSellAh extends Module {
 
     private int timer;
 
-    public AutoSellAH() {
+    public AutoSellAh() {
         super(
             AddonTemplate.CATEGORY,
             "auto-sell-ah",
@@ -89,15 +89,14 @@ public class AutoSellAh extends Module {
             return;
         }
 
-        // ==========================================
+        // =========================
         // KIỂM TRA ITEM ĐANG CẦM
-        // ==========================================
+        // =========================
 
         ItemStack hand = mc.player.getMainHandItem();
 
         /*
-         * Nếu tay đang cầm đúng item cần bán
-         * thì mới được gửi lệnh.
+         * Chỉ bán khi tay đang cầm ĐÚNG item đã chọn.
          */
         if (hand.getItem() == item.get()) {
 
@@ -109,23 +108,24 @@ public class AutoSellAh extends Module {
             return;
         }
 
-        // ==========================================
-        // TÌM ITEM TRONG INVENTORY
-        // ==========================================
+        // =========================
+        // TÌM ITEM
+        // =========================
 
         int slot = findItem();
 
         /*
-         * Không còn item -> tắt module.
+         * Không có item:
+         * Không tắt module.
+         * Chỉ đứng chờ.
          */
         if (slot == -1) {
-            toggle();
             return;
         }
 
-        // ==========================================
-        // ĐƯA ITEM LÊN MAIN HAND
-        // ==========================================
+        // =========================
+        // ĐƯA ITEM LÊN TAY
+        // =========================
 
         if (slot < 9) {
             /*
@@ -136,31 +136,24 @@ public class AutoSellAh extends Module {
             /*
              * Item nằm trong inventory.
              *
-             * Đổi item vào slot hotbar 0.
+             * Đưa item vào hotbar slot 0.
              */
-            mc.player.getInventory().swapPaint(
-                slot
-            );
-
+            mc.player.getInventory().swapPaint(slot);
             mc.player.getInventory().setSelectedSlot(0);
         }
 
         /*
-         * Không bán ngay trong tick này.
-         *
-         * Tick tiếp theo sẽ kiểm tra:
-         * main hand có đúng item không.
+         * Chờ 1 tick để kiểm tra lại Main Hand.
          */
         timer = 1;
     }
 
-    // ==========================================
-    // TÌM ITEM
-    // ==========================================
+    // =========================
+    // TÌM ITEM TRONG INVENTORY
+    // =========================
 
     private int findItem() {
         for (int slot = 0; slot < 36; slot++) {
-
             ItemStack stack =
                 mc.player.getInventory().getItem(slot);
 
