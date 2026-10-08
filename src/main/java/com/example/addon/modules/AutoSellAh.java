@@ -10,7 +10,7 @@ import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,7 +27,7 @@ public class AutoSellAh extends Module {
     private final Setting<Item> item1 = sg.add(
         new ItemSetting.Builder()
             .name("item-1")
-            .description("Item thứ 1 muốn bán.")
+            .description("Item 1.")
             .defaultValue(Items.DIAMOND)
             .build()
     );
@@ -35,7 +35,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> price1 = sg.add(
         new IntSetting.Builder()
             .name("price-1")
-            .description("Giá bán của Item 1.")
+            .description("Gia ban cua item 1.")
             .defaultValue(200000)
             .min(1)
             .sliderMax(10000000)
@@ -49,7 +49,7 @@ public class AutoSellAh extends Module {
     private final Setting<Item> item2 = sg.add(
         new ItemSetting.Builder()
             .name("item-2")
-            .description("Item thứ 2 muốn bán.")
+            .description("Item 2.")
             .defaultValue(Items.EMERALD)
             .build()
     );
@@ -57,7 +57,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> price2 = sg.add(
         new IntSetting.Builder()
             .name("price-2")
-            .description("Giá bán của Item 2.")
+            .description("Gia ban cua item 2.")
             .defaultValue(300000)
             .min(1)
             .sliderMax(10000000)
@@ -71,7 +71,7 @@ public class AutoSellAh extends Module {
     private final Setting<Item> item3 = sg.add(
         new ItemSetting.Builder()
             .name("item-3")
-            .description("Item thứ 3 muốn bán.")
+            .description("Item 3.")
             .defaultValue(Items.GOLD_INGOT)
             .build()
     );
@@ -79,7 +79,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> price3 = sg.add(
         new IntSetting.Builder()
             .name("price-3")
-            .description("Giá bán của Item 3.")
+            .description("Gia ban cua item 3.")
             .defaultValue(100000)
             .min(1)
             .sliderMax(10000000)
@@ -93,7 +93,7 @@ public class AutoSellAh extends Module {
     private final Setting<Item> item4 = sg.add(
         new ItemSetting.Builder()
             .name("item-4")
-            .description("Item thứ 4 muốn bán.")
+            .description("Item 4.")
             .defaultValue(Items.IRON_INGOT)
             .build()
     );
@@ -101,7 +101,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> price4 = sg.add(
         new IntSetting.Builder()
             .name("price-4")
-            .description("Giá bán của Item 4.")
+            .description("Gia ban cua item 4.")
             .defaultValue(50000)
             .min(1)
             .sliderMax(10000000)
@@ -115,7 +115,7 @@ public class AutoSellAh extends Module {
     private final Setting<Item> item5 = sg.add(
         new ItemSetting.Builder()
             .name("item-5")
-            .description("Item thứ 5 muốn bán.")
+            .description("Item 5.")
             .defaultValue(Items.AIR)
             .build()
     );
@@ -123,7 +123,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> price5 = sg.add(
         new IntSetting.Builder()
             .name("price-5")
-            .description("Giá bán của Item 5.")
+            .description("Gia ban cua item 5.")
             .defaultValue(100000)
             .min(1)
             .sliderMax(10000000)
@@ -137,7 +137,7 @@ public class AutoSellAh extends Module {
     private final Setting<Item> item6 = sg.add(
         new ItemSetting.Builder()
             .name("item-6")
-            .description("Item thứ 6 muốn bán.")
+            .description("Item 6.")
             .defaultValue(Items.AIR)
             .build()
     );
@@ -145,7 +145,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> price6 = sg.add(
         new IntSetting.Builder()
             .name("price-6")
-            .description("Giá bán của Item 6.")
+            .description("Gia ban cua item 6.")
             .defaultValue(100000)
             .min(1)
             .sliderMax(10000000)
@@ -159,7 +159,7 @@ public class AutoSellAh extends Module {
     private final Setting<Item> item7 = sg.add(
         new ItemSetting.Builder()
             .name("item-7")
-            .description("Item thứ 7 muốn bán.")
+            .description("Item 7.")
             .defaultValue(Items.AIR)
             .build()
     );
@@ -167,7 +167,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> price7 = sg.add(
         new IntSetting.Builder()
             .name("price-7")
-            .description("Giá bán của Item 7.")
+            .description("Gia ban cua item 7.")
             .defaultValue(100000)
             .min(1)
             .sliderMax(10000000)
@@ -181,7 +181,7 @@ public class AutoSellAh extends Module {
     private final Setting<Item> item8 = sg.add(
         new ItemSetting.Builder()
             .name("item-8")
-            .description("Item thứ 8 muốn bán.")
+            .description("Item 8.")
             .defaultValue(Items.AIR)
             .build()
     );
@@ -189,7 +189,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> price8 = sg.add(
         new IntSetting.Builder()
             .name("price-8")
-            .description("Giá bán của Item 8.")
+            .description("Gia ban cua item 8.")
             .defaultValue(100000)
             .min(1)
             .sliderMax(10000000)
@@ -203,7 +203,7 @@ public class AutoSellAh extends Module {
     private final Setting<Integer> delay = sg.add(
         new IntSetting.Builder()
             .name("delay")
-            .description("Thời gian chờ giữa các lần bán.")
+            .description("So tick cho giua cac lan ban.")
             .defaultValue(20)
             .min(1)
             .sliderMax(100)
@@ -220,7 +220,7 @@ public class AutoSellAh extends Module {
         super(
             AddonTemplate.CATEGORY,
             "auto-sell-ah",
-            "Tự động lấy item trong inventory và bán bằng /ah sell."
+            "Tu dong lay item trong inventory va ban bang /ah sell."
         );
     }
 
@@ -248,7 +248,11 @@ public class AutoSellAh extends Module {
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
-        if (mc.player == null || mc.getConnection() == null) {
+        if (mc.player == null || mc.gameMode == null) {
+            return;
+        }
+
+        if (mc.getConnection() == null) {
             return;
         }
 
@@ -258,7 +262,7 @@ public class AutoSellAh extends Module {
         }
 
         // =====================================================
-        // 1. KIỂM TRA MAIN HAND
+        // 1. KIEM TRA MAIN HAND
         // =====================================================
 
         ItemStack hand = mc.player.getMainHandItem();
@@ -266,15 +270,15 @@ public class AutoSellAh extends Module {
         if (!hand.isEmpty()) {
             Item handItem = hand.getItem();
 
-            int price = getPrice(handItem);
+            int sellPrice = getPrice(handItem);
 
             /*
-             * Nếu Main Hand là một item đã chọn
-             * thì mới được phép bán.
+             * Chi ban neu Main Hand dung item
+             * ma nguoi dung da chon.
              */
-            if (price != -1) {
+            if (sellPrice > 0) {
                 mc.player.connection.sendCommand(
-                    "ah sell " + price
+                    "ah sell " + sellPrice
                 );
 
                 timer = delay.get();
@@ -283,69 +287,81 @@ public class AutoSellAh extends Module {
         }
 
         // =====================================================
-        // 2. TÌM ITEM TRONG INVENTORY
+        // 2. TIM ITEM
         // =====================================================
 
         int slot = findItem();
 
         /*
-         * Không có item:
-         *
-         * KHÔNG TẮT MODULE.
-         * Tiếp tục chờ.
+         * Khong co item thi KHONG tat module.
+         * Tiep tuc cho item moi.
          */
         if (slot == -1) {
             return;
         }
 
         // =====================================================
-        // 3. ITEM ĐÃ Ở HOTBAR
+        // 3. ITEM NAM TRONG HOTBAR
         // =====================================================
 
         if (slot < 9) {
+            /*
+             * Chon truc tiep hotbar slot.
+             */
             mc.player.getInventory().setSelectedSlot(slot);
 
             /*
-             * Chờ 1 tick để Main Hand cập nhật.
+             * Cho 1 tick de Main Hand cap nhat.
              */
             timer = 1;
             return;
         }
 
         // =====================================================
-        // 4. ITEM Ở INVENTORY
+        // 4. ITEM NAM TRONG INVENTORY
         // =====================================================
 
         /*
-         * Đổi item trong inventory với
-         * hotbar slot 0.
+         * Player Inventory:
          *
-         * Sau đó chọn hotbar slot 0.
+         * 0  - 8  = hotbar
+         * 9  - 35 = inventory
+         *
+         * InventoryMenu cua Minecraft:
+         *
+         * 9  - 35 = inventory
+         *
+         * SWAP button 0:
+         * doi item nay voi hotbar slot 0.
          */
-        mc.gameMode.handleInventoryMouseClick(
+
+        mc.gameMode.handleContainerInput(
             mc.player.containerMenu.containerId,
             slot,
             0,
-            ClickType.SWAP,
+            ContainerInput.SWAP,
             mc.player
         );
 
+        /*
+         * Chon hotbar slot 0.
+         */
         mc.player.getInventory().setSelectedSlot(0);
 
         /*
-         * Tick sau mới kiểm tra Main Hand.
+         * Tick sau moi kiem tra Main Hand.
          */
         timer = 1;
     }
 
     // =========================================================
-    // TÌM ITEM
+    // TIM ITEM TRONG INVENTORY
     // =========================================================
 
     private int findItem() {
 
         /*
-         * Ưu tiên tìm trong HOTBAR trước.
+         * Uu tien HOTBAR.
          */
         for (int slot = 0; slot < 9; slot++) {
             ItemStack stack =
@@ -355,13 +371,13 @@ public class AutoSellAh extends Module {
                 continue;
             }
 
-            if (getPrice(stack.getItem()) != -1) {
+            if (getPrice(stack.getItem()) > 0) {
                 return slot;
             }
         }
 
         /*
-         * Sau đó tìm trong INVENTORY.
+         * Sau do tim INVENTORY.
          */
         for (int slot = 9; slot < 36; slot++) {
             ItemStack stack =
@@ -371,7 +387,7 @@ public class AutoSellAh extends Module {
                 continue;
             }
 
-            if (getPrice(stack.getItem()) != -1) {
+            if (getPrice(stack.getItem()) > 0) {
                 return slot;
             }
         }
@@ -380,40 +396,64 @@ public class AutoSellAh extends Module {
     }
 
     // =========================================================
-    // LẤY GIÁ CỦA ITEM
+    // LAY GIA THEO ITEM
     // =========================================================
 
     private int getPrice(Item item) {
 
+        /*
+         * Item 1
+         */
         if (item == item1.get()) {
             return price1.get();
         }
 
+        /*
+         * Item 2
+         */
         if (item == item2.get()) {
             return price2.get();
         }
 
+        /*
+         * Item 3
+         */
         if (item == item3.get()) {
             return price3.get();
         }
 
+        /*
+         * Item 4
+         */
         if (item == item4.get()) {
             return price4.get();
         }
 
-        if (item == item5.get() && item5.get() != Items.AIR) {
+        /*
+         * Item 5
+         */
+        if (item5.get() != Items.AIR && item == item5.get()) {
             return price5.get();
         }
 
-        if (item == item6.get() && item6.get() != Items.AIR) {
+        /*
+         * Item 6
+         */
+        if (item6.get() != Items.AIR && item == item6.get()) {
             return price6.get();
         }
 
-        if (item == item7.get() && item7.get() != Items.AIR) {
+        /*
+         * Item 7
+         */
+        if (item7.get() != Items.AIR && item == item7.get()) {
             return price7.get();
         }
 
-        if (item == item8.get() && item8.get() != Items.AIR) {
+        /*
+         * Item 8
+         */
+        if (item8.get() != Items.AIR && item == item8.get()) {
             return price8.get();
         }
 
