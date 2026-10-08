@@ -1,6 +1,8 @@
 package com.example.addon;
 
 import com.example.addon.modules.AutoAnvilEnchant;
+import com.example.addon.modules.AutoSellAH;
+
 import com.mojang.logging.LogUtils;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
@@ -17,9 +19,10 @@ public class AddonTemplate extends MeteorAddon {
 
     @Override
     public void onInitialize() {
-        LOG.info("Auto Anvil Enchant loaded");
+        LOG.info("Metor Plus loaded");
 
         Modules.get().add(new AutoAnvilEnchant());
+        Modules.get().add(new AutoSellAh());
     }
 
     @Override
