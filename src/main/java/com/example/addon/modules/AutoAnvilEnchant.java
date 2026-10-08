@@ -5,17 +5,16 @@ import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.EnchantmentListSetting;
 import meteordevelopment.meteorclient.settings.IntSetting;
-import meteordevelopment.meteorclient.settings.ItemListSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
+
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerInput;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -23,7 +22,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
-import java.util.List;
 import java.util.Set;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
@@ -31,31 +29,10 @@ import static meteordevelopment.meteorclient.MeteorClient.mc;
 public class AutoAnvilEnchant extends Module {
     private final SettingGroup sg = settings.getDefaultGroup();
 
-    private final Setting<List<Item>> items = sg.add(new ItemListSetting.Builder()
-        .name("items")
-        .description("Chỉ enchant những đồ này.")
-        .defaultValue(List.of(
-            Items.DIAMOND_SWORD,
-            Items.DIAMOND_PICKAXE,
-            Items.DIAMOND_AXE,
-            Items.DIAMOND_HELMET,
-            Items.DIAMOND_CHESTPLATE,
-            Items.DIAMOND_LEGGINGS,
-            Items.DIAMOND_BOOTS,
-            Items.NETHERITE_SWORD,
-            Items.NETHERITE_PICKAXE,
-            Items.NETHERITE_AXE,
-            Items.NETHERITE_HELMET,
-            Items.NETHERITE_CHESTPLATE,
-            Items.NETHERITE_LEGGINGS,
-            Items.NETHERITE_BOOTS
-        ))
-        .build());
-
     private final Setting<Set<ResourceKey<Enchantment>>> enchants =
         sg.add(new EnchantmentListSetting.Builder()
             .name("enchantments")
-            .description("Chỉ dùng sách có những enchant này.")
+            .description("Những enchant được phép tự động ghép.")
             .defaultValue(Set.of(
                 Enchantments.MENDING,
                 Enchantments.UNBREAKING,
@@ -65,95 +42,279 @@ public class AutoAnvilEnchant extends Module {
             ))
             .build());
 
-    private final Setting<Integer> delay = sg.add(new IntSetting.Builder()
-        .name("delay")
-        .description("Số tick chờ giữa các thao tác.")
-        .defaultValue(3)
-        .min(0)
-        .sliderMax(20)
-        .build());
+    private final Setting<Integer> delay =
+        sg.add(new IntSetting.Builder()
+            .name("delay")
+            .description("Thời gian chờ giữa mỗi thao tác.")
+            .defaultValue(3)
+            .min(0)
+            .sliderMax(20)
+            .build());
 
-    private final Setting<Boolean> autoTake = sg.add(new BoolSetting.Builder()
-        .name("auto-take")
-        .description("Tự lấy kết quả ra khỏi đe.")
-        .defaultValue(true)
-        .build());
+    private final Setting<Boolean> autoTake =
+        sg.add(new BoolSetting.Builder()
+            .name("auto-take")
+            .description("Tự động lấy kết quả từ Anvil.")
+            .defaultValue(true)
+            .build());
 
-    private int timer;
-    private boolean done;
+    private int timer = 0;
 
     public AutoAnvilEnchant() {
         super(
             AddonTemplate.CATEGORY,
             "auto-anvil-enchant",
-            "Tự động sử dụng đe để ghép enchant."
+            "Tự động enchant toàn bộ item trong inventory bằng Anvil."
         );
     }
 
     @Override
     public void onActivate() {
         timer = 0;
-        done = false;
+    }
+
+    @Override
+    public void onDeactivate() {
+        timer = 0;
     }
 
     @EventHandler
     private void onTick(TickEvent.Post event) {
         if (mc.player == null || mc.gameMode == null) return;
 
+        /*
+         * Chỉ hoạt động khi người chơi đang mở Anvil.
+         * Không cần đóng/mở lại Anvil giữa các item.
+         */
         if (!(mc.player.containerMenu instanceof AnvilMenu menu)) {
-            done = false;
+            timer = 0;
             return;
         }
-
-        if (done) return;
 
         if (timer > 0) {
             timer--;
             return;
         }
 
-        ItemStack left = menu.getSlot(0).getItem();
-        ItemStack right = menu.getSlot(1).getItem();
+        /*
+         * ---------------------------------------------------------
+         * 1. KIỂM TRA KẾT QUẢ
+         * ---------------------------------------------------------
+         */
         ItemStack output = menu.getSlot(2).getItem();
 
         if (!output.isEmpty()) {
-            if (autoTake.get() && canTake(menu)) {
-                click(menu, 2);
+            if (!autoTake.get()) return;
+
+            if (!canTake(menu)) {
+                return;
             }
 
-            done = true;
+            quickMove(menu, 2);
             return;
         }
+
+        /*
+         * ---------------------------------------------------------
+         * 2. Ô TRÁI TRỐNG
+         *
+         * Tìm món đầu tiên trong toàn bộ inventory có thể enchant.
+         * ---------------------------------------------------------
+         */
+        ItemStack left = menu.getSlot(0).getItem();
 
         if (left.isEmpty()) {
-            int heldSlot = 30 + mc.player.getInventory().getSelectedSlot();
-            ItemStack held = menu.getSlot(heldSlot).getItem();
+            int targetSlot = findNextItem(menu);
 
-            if (held.isEmpty()
-                || !items.get().contains(held.getItem())
-                || findBook(menu, held) == -1) {
-
-                done = true;
+            if (targetSlot == -1) {
+                /*
+                 * Không còn item nào cần enchant.
+                 */
                 return;
             }
 
-            click(menu, heldSlot);
+            quickMove(menu, targetSlot);
             return;
         }
 
-        if (right.isEmpty()) {
-            int book = findBook(menu, left);
+        /*
+         * ---------------------------------------------------------
+         * 3. ĐÃ CÓ ITEM Ở Ô TRÁI
+         *
+         * Tìm sách enchant phù hợp trong inventory.
+         * ---------------------------------------------------------
+         */
+        ItemStack right = menu.getSlot(1).getItem();
 
-            if (book == -1) {
-                done = true;
+        if (right.isEmpty()) {
+            int bookSlot = findBook(menu, left);
+
+            if (bookSlot == -1) {
+                /*
+                 * Item này không có sách phù hợp.
+                 *
+                 * Trả item về inventory để module có thể
+                 * tiếp tục kiểm tra những item khác.
+                 */
+                quickMove(menu, 0);
                 return;
             }
 
-            click(menu, book);
+            quickMove(menu, bookSlot);
+            return;
         }
+
+        /*
+         * Nếu cả hai ô đã có item nhưng chưa có output,
+         * chờ Anvil/server cập nhật.
+         */
     }
 
-    private void click(AnvilMenu menu, int slot) {
+    /**
+     * Tìm item tiếp theo trong inventory.
+     *
+     * AnvilMenu:
+     *
+     * 0 = item trái
+     * 1 = sách
+     * 2 = output
+     *
+     * 3 -> 38 = inventory + hotbar của người chơi.
+     */
+    private int findNextItem(AnvilMenu menu) {
+        for (int slot = 3; slot < menu.slots.size(); slot++) {
+            ItemStack stack = menu.getSlot(slot).getItem();
+
+            if (stack.isEmpty()) continue;
+
+            /*
+             * Không lấy Enchanted Book làm item chính.
+             */
+            if (stack.is(Items.ENCHANTED_BOOK)) continue;
+
+            /*
+             * Kiểm tra xem item có ít nhất một sách enchant
+             * phù hợp trong inventory hay không.
+             */
+            if (findBook(menu, stack) != -1) {
+                return slot;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Tìm Enchanted Book phù hợp với item.
+     */
+    private int findBook(AnvilMenu menu, ItemStack target) {
+        for (int slot = 3; slot < menu.slots.size(); slot++) {
+            ItemStack book = menu.getSlot(slot).getItem();
+
+            if (book.isEmpty()) continue;
+
+            if (!book.is(Items.ENCHANTED_BOOK)) continue;
+
+            if (hasUsefulEnchant(target, book)) {
+                return slot;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Kiểm tra sách có enchant nào:
+     *
+     * - nằm trong danh sách enchant được phép
+     * - dùng được cho item
+     * - không conflict
+     * - level sách cao hơn level hiện tại
+     */
+    private boolean hasUsefulEnchant(
+        ItemStack target,
+        ItemStack book
+    ) {
+        ItemEnchantments stored =
+            book.getOrDefault(
+                DataComponents.STORED_ENCHANTMENTS,
+                ItemEnchantments.EMPTY
+            );
+
+        ItemEnchantments current =
+            EnchantmentHelper.getEnchantmentsForCrafting(target);
+
+        for (Holder<Enchantment> enchantment : stored.keySet()) {
+
+            if (enchantment.unwrapKey().isEmpty()) {
+                continue;
+            }
+
+            ResourceKey<Enchantment> key =
+                enchantment.unwrapKey().get();
+
+            /*
+             * Không nằm trong danh sách enchant được phép.
+             */
+            if (!enchants.get().contains(key)) {
+                continue;
+            }
+
+            /*
+             * Enchant này không dùng được cho item.
+             */
+            if (!enchantment.value().isSupportedItem(target)) {
+                continue;
+            }
+
+            /*
+             * Kiểm tra conflict với enchant hiện tại.
+             */
+            boolean conflict = false;
+
+            for (Holder<Enchantment> existing : current.keySet()) {
+                if (existing.equals(enchantment)) {
+                    continue;
+                }
+
+                if (!Enchantment.areCompatible(
+                    enchantment,
+                    existing
+                )) {
+                    conflict = true;
+                    break;
+                }
+            }
+
+            if (conflict) {
+                continue;
+            }
+
+            /*
+             * Chỉ ghép nếu sách có level cao hơn level hiện tại.
+             */
+            int bookLevel = stored.getLevel(enchantment);
+            int currentLevel = current.getLevel(enchantment);
+
+            if (bookLevel > currentLevel) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Lấy item ra khỏi Anvil hoặc đưa item từ inventory vào Anvil.
+     *
+     * Minecraft 26.2 dùng:
+     * ContainerInput.QUICK_MOVE
+     * thay cho ClickType.QUICK_MOVE.
+     */
+    private void quickMove(
+        AnvilMenu menu,
+        int slot
+    ) {
         mc.gameMode.handleContainerInput(
             menu.containerId,
             slot,
@@ -165,69 +326,18 @@ public class AutoAnvilEnchant extends Module {
         timer = delay.get();
     }
 
+    /**
+     * Kiểm tra người chơi có thể lấy output.
+     */
     private boolean canTake(AnvilMenu menu) {
-        if (mc.player.isCreative()) return true;
+        if (mc.player.isCreative()) {
+            return true;
+        }
 
         int cost = menu.getCost();
 
         return cost > 0
             && cost < 40
             && mc.player.experienceLevel >= cost;
-    }
-
-    private int findBook(AnvilMenu menu, ItemStack target) {
-        for (int i = 3; i < menu.slots.size(); i++) {
-            ItemStack book = menu.getSlot(i).getItem();
-
-            if (book.is(Items.ENCHANTED_BOOK)
-                && hasUsefulEnchant(target, book)) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private boolean hasUsefulEnchant(
-        ItemStack target,
-        ItemStack book
-    ) {
-        ItemEnchantments stored = book.getOrDefault(
-            DataComponents.STORED_ENCHANTMENTS,
-            ItemEnchantments.EMPTY
-        );
-
-        ItemEnchantments current =
-            EnchantmentHelper.getEnchantmentsForCrafting(target);
-
-        for (Holder<Enchantment> ench : stored.keySet()) {
-            if (ench.unwrapKey().isEmpty()) continue;
-
-            if (!enchants.get().contains(ench.unwrapKey().get())) {
-                continue;
-            }
-
-            if (!ench.value().isSupportedItem(target)) {
-                continue;
-            }
-
-            boolean conflict = false;
-
-            for (Holder<Enchantment> existing : current.keySet()) {
-                if (!existing.equals(ench)
-                    && !Enchantment.areCompatible(ench, existing)) {
-                    conflict = true;
-                    break;
-                }
-            }
-
-            if (conflict) continue;
-
-            if (stored.getLevel(ench) > current.getLevel(ench)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
