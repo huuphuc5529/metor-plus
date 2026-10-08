@@ -1,7 +1,7 @@
 package com.example.addon;
 
 import com.example.addon.modules.AutoAnvilEnchant;
-import com.example.addon.modules.AutoSellAH;
+import com.example.addon.modules.AutoSellAh;
 
 import com.mojang.logging.LogUtils;
 import meteordevelopment.meteorclient.addons.GithubRepo;
