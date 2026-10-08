@@ -1,32 +1,21 @@
 {
   "schemaVersion": 1,
-  "id": "addon-template",
+  "id": "auto-anvil-enchant",
   "version": "${version}",
-  "name": "Addon Template",
-  "description": "An addon template for Meteor Client addons.",
-  "authors": [
-    "seasnail"
-  ],
+  "name": "Auto Anvil Enchant",
+  "description": "Meteor addon: tu enchant do bang sach trong de.",
+  "authors": ["huuphuc5529"],
   "contact": {
-    "sources": "https://github.com/MeteorDevelopment/meteor-addon-template"
+    "sources": "https://github.com/huuphuc5529/metor-plus"
   },
   "icon": "assets/template/icon.png",
   "environment": "client",
   "entrypoints": {
-    "meteor": [
-      "com.example.addon.AddonTemplate"
-    ]
+    "meteor": ["com.example.addon.AddonTemplate"]
   },
-  "mixins": [
-    "addon-template.mixins.json"
-  ],
+  "mixins": ["addon-template.mixins.json"],
   "custom": {
-    "meteor-client:color": "225,25,25",
-    "modmenu": {
-      "parent": {
-        "id": "meteor-client"
-      }
-    }
+    "meteor-client:color": "225,25,25"
   },
   "depends": {
     "java": ">=${jdk_version}",
